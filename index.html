@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Minimal Bookmark Manager</title>
+  <style>
+    :root {
+      --bg: #f6f7f9;
+      --card: #ffffff;
+      --ink: #111827;
+      --ink-2: #6b7280;
+      --line: #e5e7eb;
+      --accent: #4f46e5;
+      --accent-soft: #eef2ff;
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background: var(--bg);
+      color: var(--ink);
+      line-height: 1.5;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    .container {
+      width: 100%;
+      max-width: 720px;
+      margin: 0 auto;
+      padding: 24px 16px 40px;
+      flex: 1;
+    }
+    h1 {
+      font-size: 1.5rem;
+      margin: 0 0 20px;
+      letter-spacing: -0.02em;
+    }
+    form { margin: 0 0 20px; }
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    input[type="text"],
+    input[type="url"] {
+      width: 100%;
+      padding: 12px 14px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: var(--card);
+      color: var(--ink);
+      font-size: 1rem;
+      outline: none;
+    }
+    input[type="text"]:focus,
+    input[type="url"]:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px var(--accent-soft);
+    }
+    button {
+      padding: 12px 18px;
+      border: none;
+      border-radius: 10px;
+      background: var(--accent);
+      color: #fff;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    button:hover { opacity: 0.92; }
+    .search {
+      margin: 0 0 16px;
+    }
+    .search input {
+      width: 100%;
+      padding: 12px 14px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: var(--card);
+      color: var(--ink);
+      font-size: 1rem;
+      outline: none;
+    }
+    .search input:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px var(--accent-soft);
+    }
+    .count {
+      font-size: 0.875rem;
+      color: var(--ink-2);
+      margin: 0 0 14px;
+    }
+    .bookmarks {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 14px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      word-break: break-word;
+    }
+    .card a {
+      color: var(--accent);
+      font-weight: 600;
+      text-decoration: none;
+      font-size: 1rem;
+    }
+    .card a:hover { text-decoration: underline; }
+    .card .url {
+      font-size: 0.8rem;
+      color: var(--ink-2);
+    }
+    .tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+    .tag {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 999px;
+      background: var(--accent-soft);
+      color: var(--accent);
+      font-size: 0.75rem;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+    }
+    .tag:hover { opacity: 0.85; }
+    .actions {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      margin-top: 4px;
+    }
+    .actions button {
+      padding: 6px 12px;
+      font-size: 0.8rem;
+      background: transparent;
+      color: var(--ink-2);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+    }
+    .actions button:hover {
+      background: var(--bg);
+      color: var(--ink);
+    }
+    .empty {
+      text-align: center;
+      color: var(--ink-2);
+      padding: 40px 0;
+      font-size: 0.95rem;
+    }
+    footer {
+      text-align: center;
+      padding: 24px 16px;
+      font-size: 0.85rem;
+      color: var(--ink-2);
+      border-top: 1px solid var(--line);
+    }
+    footer a {
+      color: var(--accent);
+      text-decoration: none;
+    }
+    footer a:hover { text-decoration: underline; }
+    @media (min-width: 480px) {
+      .field { flex-direction: row; }
+      input[type="text"],
+      input[type="url"] { flex: 1; }
+      h1 { font-size: 1.75rem; }
+    }
+  </style>
+</head>
+
+<body>
+  <main class="container">
+    <h1>Bookmark Manager</h1>
+
+    <form id="addForm" aria-label="Add bookmark">
+      <div class="field">
+        <input type="url" id="urlInput" placeholder="https://example.com" required>
+        <input type="text" id="tagsInput" placeholder="design, tools, read-later">
+        <button type="submit">Save</button>
+      </div>
+    </form>
+
+    <form class="search" id="searchForm" aria-label="Search bookmarks">
+      <input type="text" id="searchInput" placeholder="Search title, URL, or tags…" autocomplete="off">
+    </form>
+
+    <p class="count" id="count">0 bookmarks</p>
+
+    <div class="bookmarks" id="bookmarks" role="list">
+      <div class="empty">No bookmarks yet. Paste a link above and press Save.</div>
+    </div>
+  </main>
+
+  <footer id="footer">
+    Wished by TyrantRC, granted by Genie (open source) · report a bug → <a href="https://github.com/rmotgi1227/a-clean-minimal-bookmark/issues" target="_blank" rel="noopener">https://github.com/rmotgi1227/a-clean-minimal-bookmark/issues</a>
+  </footer>
+
+  <script>
+    (function () {
+      'use strict';
+      const STORAGE_KEY = 'minimal-bookmarks';
+      const addForm = document.getElementById('addForm');
+      const urlInput = document.getElementById('urlInput');
+      const tagsInput = document.getElementById('tagsInput');
+      const searchForm = document.getElementById('searchForm');
+      const searchInput = document.getElementById('searchInput');
+      const list = document.getElementById('bookmarks');
+      const countEl = document.getElementById('count');
+
+      function load() {
+        try {
+          return JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+        } catch (e) {
+          return [];
+        }
+      }
+
+      function save(items) {
+        try {
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
+        } catch (e) {}
+      }
+
+      function getTitle(url) {
+        try {
+          const u = new URL(url);
+          return u.hostname.replace(/^www\./, '');
+        } catch (e) {
+          return url;
+        }
+      }
+
+      function parseTags(str) {
+        return str
+          .split(/[,\s]+/)
+          .map(t => t.trim().toLowerCase())
+          .filter(Boolean);
+      }
+
+      function render(items) {
+        countEl.textContent = items.length + (items.length === 1 ? ' bookmark' : ' bookmarks');
+        list.innerHTML = '';
+        if (items.length === 0) {
+          list.innerHTML = '<div class="empty">No bookmarks yet. Paste a link above and press Save.</div>';
+          return;
+        }
+        items.forEach(item => {
+          const card = document.createElement('article');
+          card.className = 'card';
+          card.setAttribute('role', 'listitem');
+
+          const link = document.createElement('a');
+          link.href = item.url;
+          link.target = '_blank';
+          link.rel = 'noopener';
+          link.textContent = item.title || getTitle(item.url);
+          card.appendChild(link);
+
+          const urlLine = document.createElement('div');
+          urlLine.className = 'url';
+          urlLine.textContent = item.url;
+          card.appendChild(urlLine);
+
+          if (item.tags && item.tags.length) {
+            const tags = document.createElement('div');
+            tags.className = 'tags';
+            item.tags.forEach(tag => {
+              const btn = document.createElement('button');
+              btn.type = 'button';
+              btn.className = 'tag';
+              btn.textContent = '#' + tag;
+              btn.addEventListener('click', function () {
+                searchInput.value = tag;
+                doSearch();
+              });
+              tags.appendChild(btn);
+            });
+            card.appendChild(tags);
+          }
+
+          const actions = document.createElement('div');
+          actions.className = 'actions';
+          const copyBtn = document.createElement('button');
+          copyBtn.type = 'button';
+          copyBtn.textContent = 'Copy link';
+          copyBtn.addEventListener('click', function () {
+            navigator.clipboard.writeText(item.url).catch(() => {});
+          });
+          const delBtn = document.createElement('button');
+          delBtn.type = 'button';
+          delBtn.textContent = 'Delete';
+          delBtn.addEventListener('click', function () {
+            const all = load().filter(b => b.id !== item.id);
+            save(all);
+            doSearch();
+          });
+          actions.appendChild(copyBtn);
+          actions.appendChild(delBtn);
+          card.appendChild(actions);
+
+          list.appendChild(card);
+        });
+      }
+
+      function doSearch() {
+        const query = searchInput.value.trim().toLowerCase();
+        const all = load();
+        if (!query) {
+          render(all);
+          return;
+        }
+        const filtered = all.filter(item => {
+          const hay = [
+            item.url,
+            item.title,
+            (item.tags || []).join(' ')
+          ].join(' ').toLowerCase();
+          return hay.includes(query);
+        });
+        render(filtered);
+      }
+
+      addForm.addEventListener('submit', function (event) {
+        event.preventDefault();
+        const url = urlInput.value.trim();
+        const tags = parseTags(tagsInput.value);
+        if (!url) return;
+        const all = load();
+        all.unshift({
+          id: Date.now().toString(36) + Math.random().toString(36).slice(2, 7),
+          url: url,
+          title: getTitle(url),
+          tags: tags,
+          createdAt: Date.now()
+        });
+        save(all);
+        urlInput.value = '';
+        tagsInput.value = '';
+        searchInput.value = '';
+        doSearch();
+      });
+
+      searchForm.addEventListener('submit', function (event) {
+        event.preventDefault();
+        doSearch();
+      });
+
+      searchInput.addEventListener('input', doSearch);
+
+      render(load());
+    })();
+  </script>
+</body>
+</html>
+
